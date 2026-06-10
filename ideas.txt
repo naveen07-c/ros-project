@@ -1,0 +1,12 @@
+ROS - Robot Operating System
+
+Idea1 (abstract):
+     =>Build  ros for a specifc problem and integrate a large langauge model and try to make it understand the architecture of the robot.
+     =>Next make for a given goal state (query) by the user the model should be able to plan steps ahead to acheive that by the most optimal way still
+     following the constraints of the environment.
+
+Idea2 (abstract):
+     => Build ros for the robot to control a vehicle . 
+     => Train a neural network by doing test drives for the robot so that it can understand what tool to operate at which time 
+     => validate the driving by checking if it drives it in road following the traffic rules and other constraints of the environment
+
