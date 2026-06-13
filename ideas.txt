@@ -1,7 +1,7 @@
 ROS - Robot Operating System
 
 Idea1 (abstract):
-     =>Build  ros for a specifc problem and integrate a large langauge model and try to make it understand the architecture of the robot.
+     =>Build  ros for a specific problem and integrate a large langauge model and try to make it understand the architecture of the robot.
      =>Next make for a given goal state (query) by the user the model should be able to plan steps ahead to acheive that by the most optimal way still
      following the constraints of the environment.
 
@@ -10,3 +10,17 @@ Idea2 (abstract):
      => Train a neural network by doing test drives for the robot so that it can understand what tool to operate at which time 
      => validate the driving by checking if it drives it in road following the traffic rules and other constraints of the environment
 
+Idea3 (abstract):
+      =>This idea may be a specific use case of Idea1. In a Large factory you are trying to produce large number of products and packing them.
+      once they are packed they  need to be loaded manually by someone. This is where this robot comes in it stays at a place named "Labor_dept"
+      and when we pass the infromation to the head ( leader robot) it plans the work for all the other robots available and assign work according to 
+      their capabilities and availabilty. Each of them is sent a location to both truck and goods. they have to discover the best path where they are 
+      given the map of the factory while being setup for work.
+      => Once they are ordered they moves this work autonomously 
+      => There are lot of other factors and risks that make this idea more of a "complicated" idea but this could be possible (directly or indirectly) by using 
+      optimized and specific methods
+
+Idea4 (abstract):
+    => A robotic system with camera access (live) to the class while students are listening to the class and analyze their facial expression and movement
+    => Feels complicated but possible with computer vision
+    => gets difficult for higher number of students
