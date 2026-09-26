@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ============================================================
+       Base: pelvis + payload platform + payload placeholder.
+
+       ASSUMPTIONS (PROJECT_REQUIREMENTS.md §3/§4 - not confirmed):
+         pelvis/platform dimensions, masses, payload box size.
+       The payload is a separate fixed link so its 1 kg mass is
+       explicit and can be toggled for balance tests (AT-05).
+       ============================================================ -->
+
+  <!-- Proportions tuned against Robot.png visual comparison (M2):
+       pelvis spans the hip width, platform overhangs the legs,
+       payload box matches the reference 1 kg block. Still ASSUMPTIONS.
+       pelvis_w 0.20: hips sit at y = +/-0.10, so a 0.14 m pelvis left
+       them hanging off the sides with a sliver of overlap - widened so
+       the hip actuators tuck under the pelvis. -->
+  <xacro:property name="pelvis_w" value="0.20"/>
+  <xacro:property name="pelvis_h" value="0.10"/>
+  <xacro:property name="pelvis_d" value="0.20"/>
+  <xacro:property name="pelvis_m" value="1.2"/>
+
+  <xacro:property name="plat_w" value="0.28"/>
+  <xacro:property name="plat_d" value="0.36"/>
+  <xacro:property name="plat_t" value="0.03"/>
+  <xacro:property name="plat_m" value="0.8"/>
+
+  <xacro:property name="payload_w" value="0.14"/>
+  <xacro:property name="payload_d" value="0.20"/>
+  <xacro:property name="payload_h" value="0.11"/>
+  <xacro:property name="payload_m" value="1.0"/>
+
+  <!-- Height of pelvis frame above the hip roll axis -->
+  <xacro:property name="pelvis_hip_drop" value="0.05"/>
+
+  <xacro:macro name="base" params="with_payload:=true">
+    <link name="base_link">
+      <visual>
+        <origin xyz="0 0 0"/>
+        <geometry>
+          <box size="${pelvis_w} ${pelvis_d} ${pelvis_h}"/>
+        </geometry>
+        <material name="dark_grey"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0"/>
+        <geometry>
+          <box size="${pelvis_w} ${pelvis_d} ${pelvis_h}"/>
+        </geometry>
+      </collision>
+      <xacro:box_inertial m="${pelvis_m}" x="${pelvis_w}" y="${pelvis_d}" z="${pelvis_h}"/>
+    </link>
+
+    <joint name="platform_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="platform_link"/>
+      <origin xyz="0 0 ${pelvis_h/2 + plat_t/2}"/>
+    </joint>
+
+    <link name="platform_link">
+      <!-- Torso visual: white chest shell + teal chest panel + dark
+           shoulder bar, instead of the bare shelf slab. Visual-only;
+           the physics collision stays the original shelf so masses
+           and inertia are untouched. -->
+      <visual>
+        <origin xyz="0 0 ${0.055}"/>
+        <geometry>
+          <box size="0.17 0.17 0.14"/>
+        </geometry>
+        <material name="silver"/>
+      </visual>
+      <visual>
+        <origin xyz="0.088 0 0.06"/>
+        <geometry>
+          <box size="0.005 0.11 0.08"/>
+        </geometry>
+        <material name="accent_teal"/>
+      </visual>
+      <visual>
+        <origin xyz="0 0 ${0.135}"/>
+        <geometry>
+          <box size="0.24 0.09 0.045"/>
+        </geometry>
+        <material name="actuator_dark"/>
+      </visual>
+      <visual>
+        <origin xyz="0 0 0"/>
+        <geometry>
+          <box size="${plat_w} ${plat_d} ${plat_t}"/>
+        </geometry>
+        <material name="silver"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0"/>
+        <geometry>
+          <box size="${plat_w} ${plat_d} ${plat_t}"/>
+        </geometry>
+      </collision>
+      <xacro:box_inertial m="${plat_m}" x="${plat_w}" y="${plat_d}" z="${plat_t}"/>
+    </link>
+
+    <xacro:if value="${with_payload}">
+      <joint name="payload_joint" type="fixed">
+        <parent link="platform_link"/>
+        <child link="payload_link"/>
+        <origin xyz="0 0 ${plat_t/2 + payload_h/2}"/>
+      </joint>
+
+      <link name="payload_link">
+        <!-- Head module: white head shell + glowing cyan visor strip
+             on the front face. Visual-only; collision/inertia unchanged. -->
+        <visual>
+          <origin xyz="0 0 0"/>
+          <geometry>
+            <box size="0.10 0.10 0.08"/>
+          </geometry>
+          <material name="silver"/>
+        </visual>
+        <visual>
+          <origin xyz="0.0505 0 0.01"/>
+          <geometry>
+            <box size="0.002 0.085 0.028"/>
+          </geometry>
+          <material name="eye_cyan"/>
+        </visual>
+        <collision>
+          <origin xyz="0 0 0"/>
+          <geometry>
+            <box size="${payload_w} ${payload_d} ${payload_h}"/>
+          </geometry>
+        </collision>
+        <xacro:box_inertial m="${payload_m}" x="${payload_w}" y="${payload_d}" z="${payload_h}"/>
+      </link>
+    </xacro:if>
+  </xacro:macro>
+
+</robot>

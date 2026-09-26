@@ -1,0 +1,15 @@
+# colcon artifacts (workspace builds happen in ~/RosProject_ws)
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.pyc
+
+# Gazebo / editor scratch
+*.log
+.project
+.settings/
+.vscode/
+.idea/

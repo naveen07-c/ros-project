@@ -1,0 +1,5 @@
+<library path="pwm_servo_hw">
+  <class name="biped_control/PwmServoHardware" type="pwm_servo_hw::PwmServoHardware" base_class_type="hardware_interface::SystemInterface">
+    <description>Tier S PWM-servo hardware interface (serial - ESP32 - PCA9685, HARDWARE_SELECTION.md section 7).</description>
+  </class>
+</library>

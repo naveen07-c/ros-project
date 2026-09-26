@@ -1,0 +1,262 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ============================================================
+       Parameterized 5-DoF leg: hip roll, hip pitch, knee pitch,
+       ankle pitch, ankle roll (matches Robot.png annotations).
+
+       ALL numbers below are ASSUMPTIONS (PROJECT_REQUIREMENTS.md §3/§4)
+       - not confirmed specifications. Change them here only.
+
+       Convention: +X forward, +Y left, +Z up.
+         pitch joints rotate about +Y (sagittal plane)
+         roll  joints rotate about +X (frontal plane)
+       Standing pose = all joint angles zero, soles flat on z=0
+       when base_link sits at hip_height (0.55 m, ASSUMPTION).
+       ============================================================ -->
+
+  <!-- Segment dimensions (ASSUMPTION) -->
+  <xacro:property name="thigh_len" value="0.20"/>
+  <xacro:property name="shin_len" value="0.20"/>
+  <xacro:property name="ankle_h" value="0.15"/>
+
+  <!-- Link cross-sections and masses (ASSUMPTION) -->
+  <xacro:property name="thigh_w" value="0.06"/>
+  <xacro:property name="thigh_d" value="0.05"/>
+  <xacro:property name="thigh_m" value="0.55"/>
+  <xacro:property name="shin_w" value="0.055"/>
+  <xacro:property name="shin_d" value="0.045"/>
+  <xacro:property name="shin_m" value="0.45"/>
+
+  <!-- Foot: length X, width Y, height Z (ASSUMPTION) -->
+  <xacro:property name="foot_len" value="0.16"/>
+  <xacro:property name="foot_w" value="0.09"/>
+  <xacro:property name="foot_h" value="0.03"/>
+  <xacro:property name="foot_m" value="0.30"/>
+
+  <!-- Actuator masses lumped into their parent links (ASSUMPTION) -->
+  <xacro:property name="hip_act_m" value="0.40"/>
+  <xacro:property name="knee_act_m" value="0.40"/>
+  <xacro:property name="ankle_act_m" value="0.30"/>
+
+  <!-- Joint limits (ASSUMPTION, degrees -> radians via xacro).
+       ankle_pitch upper limit raised 50 -> 65 deg in M6: the single-
+       support plant pose needs ~51 deg to keep the sole flat (heel
+       down), and the C-support stance needs ~58 deg. -->
+  <xacro:property name="hip_roll_lim_deg" value="25"/>
+  <xacro:property name="hip_pitch_lim_deg" value="90"/>
+  <xacro:property name="knee_pitch_lim_deg" value="100"/>
+  <xacro:property name="ankle_pitch_lim_deg" value="65"/>
+  <xacro:property name="ankle_roll_lim_deg" value="25"/>
+  <xacro:property name="joint_vel_lim" value="3.0"/>
+  <xacro:property name="joint_eff_lim" value="40.0"/>
+
+  <xacro:macro name="leg" params="prefix hip_y">
+
+    <!-- hip_roll -> hip_pitch: co-located at the hip -->
+    <joint name="${prefix}_hip_roll" type="revolute">
+      <parent link="base_link"/>
+      <child link="${prefix}_hip_pitch_link"/>
+      <origin xyz="0 ${hip_y} ${-pelvis_hip_drop}"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="${-hip_roll_lim_deg*pi/180.0}" upper="${hip_roll_lim_deg*pi/180.0}"
+             effort="${joint_eff_lim}" velocity="${joint_vel_lim}"/>
+      <!-- Passive damping/friction stand in for gearbox resistance until the
+         drive controllers exist (M5). Values are ASSUMPTIONS. -->
+      <dynamics damping="2.0" friction="1.0"/>
+    </joint>
+
+    <link name="${prefix}_hip_pitch_link">
+      <visual>
+        <origin xyz="0 0 0"/>
+        <geometry><cylinder radius="0.045" length="0.07"/></geometry>
+        <material name="actuator_dark"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0"/>
+        <geometry><cylinder radius="0.045" length="0.07"/></geometry>
+      </collision>
+      <xacro:cylinder_inertial m="${hip_act_m}" r="0.045" h="0.07"/>
+    </link>
+
+    <joint name="${prefix}_hip_pitch" type="revolute">
+      <parent link="${prefix}_hip_pitch_link"/>
+      <child link="${prefix}_thigh"/>
+      <origin xyz="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="${-hip_pitch_lim_deg*pi/180.0}" upper="${hip_pitch_lim_deg*pi/180.0}"
+             effort="${joint_eff_lim}" velocity="${joint_vel_lim}"/>
+      <dynamics damping="2.0" friction="1.0"/>
+    </joint>
+
+    <!-- Thigh: from hip down to knee -->
+    <link name="${prefix}_thigh">
+      <visual>
+        <origin xyz="0 0 ${-thigh_len/2}"/>
+        <geometry><box size="${thigh_w} ${thigh_d} ${thigh_len}"/></geometry>
+        <material name="silver"/>
+      </visual>
+      <!-- Knee actuator disc: visual-only (matches Robot.png); no collision
+           element so Gazebo contacts stay clean between adjacent links. -->
+      <visual>
+        <origin xyz="0 0 ${-thigh_len}"/>
+        <geometry><cylinder radius="0.05" length="0.055"/></geometry>
+        <material name="actuator_dark"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 ${-thigh_len/2}"/>
+        <geometry><box size="${thigh_w} ${thigh_d} ${thigh_len}"/></geometry>
+      </collision>
+      <xacro:box_inertial m="${thigh_m + knee_act_m}" x="${thigh_w}" y="${thigh_d}" z="${thigh_len}"
+                          ox="0" oy="0" oz="${-thigh_len/2}"/>
+    </link>
+
+    <joint name="${prefix}_knee" type="revolute">
+      <parent link="${prefix}_thigh"/>
+      <child link="${prefix}_shin"/>
+      <origin xyz="0 0 ${-thigh_len}"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="0" upper="${knee_pitch_lim_deg*pi/180.0}"
+             effort="${joint_eff_lim}" velocity="${joint_vel_lim}"/>
+      <dynamics damping="2.0" friction="1.0"/>
+    </joint>
+
+    <!-- Shin: from knee down to ankle -->
+    <link name="${prefix}_shin">
+      <visual>
+        <origin xyz="0 0 ${-shin_len/2}"/>
+        <geometry><box size="${shin_w} ${shin_d} ${shin_len}"/></geometry>
+        <material name="silver"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 ${-shin_len/2}"/>
+        <geometry><box size="${shin_w} ${shin_d} ${shin_len}"/></geometry>
+      </collision>
+      <xacro:box_inertial m="${shin_m + ankle_act_m}" x="${shin_w}" y="${shin_d}" z="${shin_len}"
+                          ox="0" oy="0" oz="${-shin_len/2}"/>
+    </link>
+
+    <joint name="${prefix}_ankle_pitch" type="revolute">
+      <parent link="${prefix}_shin"/>
+      <child link="${prefix}_ankle_roll_link"/>
+      <origin xyz="0 0 ${-shin_len}"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="${-ankle_pitch_lim_deg*pi/180.0}" upper="${ankle_pitch_lim_deg*pi/180.0}"
+             effort="${joint_eff_lim}" velocity="${joint_vel_lim}"/>
+      <dynamics damping="2.0" friction="1.0"/>
+    </joint>
+
+    <link name="${prefix}_ankle_roll_link">
+      <visual>
+        <origin xyz="0 0 0"/>
+        <geometry><cylinder radius="0.04" length="0.05"/></geometry>
+        <material name="actuator_dark"/>
+      </visual>
+      <!-- Ankle-to-foot connector: the shin ends AT the ankle axis and
+           the foot box top is 12 cm lower - without this the foot
+           looked detached, floating in air. Visual-only (no collision):
+           the sole must stay the only foot contact for the M8 sensors. -->
+      <visual>
+        <origin xyz="0 0 ${-0.06}"/>
+        <geometry><box size="0.03 0.04 0.12"/></geometry>
+        <material name="actuator_dark"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0"/>
+        <geometry><cylinder radius="0.04" length="0.05"/></geometry>
+      </collision>
+      <xacro:cylinder_inertial m="${ankle_act_m}" r="0.04" h="0.05"/>
+    </link>
+
+    <joint name="${prefix}_ankle_roll" type="revolute">
+      <parent link="${prefix}_ankle_roll_link"/>
+      <child link="${prefix}_foot"/>
+      <origin xyz="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="${-ankle_roll_lim_deg*pi/180.0}" upper="${ankle_roll_lim_deg*pi/180.0}"
+             effort="${joint_eff_lim}" velocity="${joint_vel_lim}"/>
+      <dynamics damping="2.0" friction="1.0"/>
+    </joint>
+
+    <!-- Foot: sole flush with the link origin when the leg is straight.
+         The collision element stays UNNAMED: the URDF->SDF converter then
+         auto-names it "${prefix}_foot_collision", which is the name the
+         M8 contact sensor references (sensors.xacro). Naming the URDF
+         collision explicitly makes the converter append another
+         "_collision" (name+"_collision") and the sensor reference
+         silently matches nothing - found the hard way in M8 testing. -->
+    <link name="${prefix}_foot">
+      <visual>
+        <origin xyz="0.02 0 ${-ankle_h + foot_h/2}"/>
+        <geometry><box size="${foot_len} ${foot_w} ${foot_h}"/></geometry>
+        <material name="black"/>
+      </visual>
+      <collision>
+        <origin xyz="0.02 0 ${-ankle_h + foot_h/2}"/>
+        <geometry><box size="${foot_len} ${foot_w} ${foot_h}"/></geometry>
+        <!-- NOTE: contact/friction params do NOT live inside <collision>:
+             the URDF spec has no <surface> element and the sdformat
+             URDF parser SILENTLY DISCARDS it (gz sdf -p shows an empty
+             <ode/>). M8's "soft contact" tags were a placebo - the sim
+             ran rigid default contacts all along (the 25 Hz bounce
+             signature). The params go into a <gazebo reference> block
+             below, which the parser DOES merge into the SDF. -->
+      </collision>
+      <xacro:box_inertial m="${foot_m}" x="${foot_len}" y="${foot_w}" z="${foot_h}"
+                          ox="0.02" oy="0" oz="${-ankle_h + foot_h/2}"/>
+    </link>
+    <!-- Sole friction, injected into the SDF via the gazebo extension
+         mechanism (merged into ${prefix}_foot_collision).
+         AT-11 iter 15: contact SOFTNESS removed (kp/kd/max_vel) - the
+         8e3 N/m^2 soft contact adds ~5 mm of shear compliance at foot
+         load, and in the closed kinematic chain the planted feet took
+         ~50% of every commanded pelvis motion as permanent slide
+         (~6 cm/step, treadmill signature; mu=100 bisection showed the
+         slide is force/compliance-limited, not a friction-value bug).
+         The servo is soft now (p=60), so the default RIGID contact is
+         safe (the old 25 Hz pump was the stiff p=120 servo + rigid
+         contact; soft servo + rigid contact measured bit-perfect calm
+         in the stand check).
+         AT-11 iter 16: the sdformat URDF parser does NOT populate
+         <friction> from the nested <collision><surface> extension form
+         (with no <contact> block the whole <surface> is dropped; with
+         one, <friction><ode/> still merges EMPTY = zero grip). The
+         idiom the parser actually maps is the Gazebo-classic short
+         tags directly under <gazebo reference>: mu1/mu2. -->
+    <gazebo reference="${prefix}_foot">
+      <!-- AT-11 iter 17: RIGID contact (default, no <contact> block).
+           The A/B campaign measured the 8e3/35 soft contact as the
+           fall accomplice at every first weight shift (its ~5 mm
+           shear compliance lets a planted foot creep/rock under the
+           shift transient; rigid + the soft servo was already the
+           bit-perfect-calm stand combination). mu1/mu2 stay 1.0 -
+           sdformat maps the Gazebo-classic short tags; the nested
+           <friction><ode> form merges EMPTY (zero grip). -->
+      <!-- AT-11 iter 19: mu 4.0 (high-grip rubber sole, mu 2-4 is
+           realistic for rubber on rough ground). At mu=1 the planted
+           feet cyclically SLID backward ~2 cm during every SETTLE -
+           the pose truth showed the pelvis advancing +3.6 cm while
+           both feet slipped -2 cm: friction yields and eats the
+           pelvis advance. mu=4 pins the feet so the closed chain
+           carries the body instead. -->
+      <mu1>1.0</mu1>
+      <mu2>1.0</mu2>
+      <!-- AT-11 iter 21 (2026-09-19): soft damped contact RESTORED
+           (kp 8e3, kd 35, max_vel 0) per the 2026-09-18 measured verdict
+           "soft sole contact required - rigid contacts fall at the first
+           shift". The iter-17/19 rigid experiment could not even complete
+           the APPROACH crouch (watchdog ESTOP on every attempt, runs
+           BB->BM: 0 steps built) - the rigid sole bounces the crouch
+           inrush longer than the watchdog window. mu 4.0 retained. -->
+      <contact>
+        <ode>
+          <kp>8e3</kp>
+          <kd>35</kd>
+          <max_vel>0</max_vel>
+        </ode>
+      </contact>
+    </gazebo>
+
+  </xacro:macro>
+
+</robot>
