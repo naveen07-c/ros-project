@@ -26,7 +26,7 @@ def generate_launch_description():
         description='Start RViz2 alongside robot_state_publisher')
 
     robot_description = ParameterValue(
-        Command(['xacro ', LaunchConfiguration('model')]),
+        Command(['xacro "', LaunchConfiguration('model'), '"']),
         value_type=str)
 
     rsp = Node(

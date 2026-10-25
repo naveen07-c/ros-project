@@ -1,0 +1,4 @@
+PASS payload=true: all joints, inertias, collisions, sensors, control plugins and contact settings identical in URDF and SDF
+PASS payload=false: all joints, inertias, collisions, sensors, control plugins and contact settings identical in URDF and SDF
+PASS control sources, controller/gait YAML and world are unchanged
+PASS 115 CAD instances in 10 valid meshes, STEP checksum unchanged, mesh paths resolve, Gazebo color matches STEP

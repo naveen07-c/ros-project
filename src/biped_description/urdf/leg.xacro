@@ -67,11 +67,7 @@
     </joint>
 
     <link name="${prefix}_hip_pitch_link">
-      <visual>
-        <origin xyz="0 0 0"/>
-        <geometry><cylinder radius="0.045" length="0.07"/></geometry>
-        <material name="actuator_dark"/>
-      </visual>
+      <xacro:cad_visual link="${prefix}_hip_pitch_link"/>
       <collision>
         <origin xyz="0 0 0"/>
         <geometry><cylinder radius="0.045" length="0.07"/></geometry>
@@ -91,18 +87,7 @@
 
     <!-- Thigh: from hip down to knee -->
     <link name="${prefix}_thigh">
-      <visual>
-        <origin xyz="0 0 ${-thigh_len/2}"/>
-        <geometry><box size="${thigh_w} ${thigh_d} ${thigh_len}"/></geometry>
-        <material name="silver"/>
-      </visual>
-      <!-- Knee actuator disc: visual-only (matches Robot.png); no collision
-           element so Gazebo contacts stay clean between adjacent links. -->
-      <visual>
-        <origin xyz="0 0 ${-thigh_len}"/>
-        <geometry><cylinder radius="0.05" length="0.055"/></geometry>
-        <material name="actuator_dark"/>
-      </visual>
+      <xacro:cad_visual link="${prefix}_thigh"/>
       <collision>
         <origin xyz="0 0 ${-thigh_len/2}"/>
         <geometry><box size="${thigh_w} ${thigh_d} ${thigh_len}"/></geometry>
@@ -123,11 +108,7 @@
 
     <!-- Shin: from knee down to ankle -->
     <link name="${prefix}_shin">
-      <visual>
-        <origin xyz="0 0 ${-shin_len/2}"/>
-        <geometry><box size="${shin_w} ${shin_d} ${shin_len}"/></geometry>
-        <material name="silver"/>
-      </visual>
+      <xacro:cad_visual link="${prefix}_shin"/>
       <collision>
         <origin xyz="0 0 ${-shin_len/2}"/>
         <geometry><box size="${shin_w} ${shin_d} ${shin_len}"/></geometry>
@@ -147,20 +128,7 @@
     </joint>
 
     <link name="${prefix}_ankle_roll_link">
-      <visual>
-        <origin xyz="0 0 0"/>
-        <geometry><cylinder radius="0.04" length="0.05"/></geometry>
-        <material name="actuator_dark"/>
-      </visual>
-      <!-- Ankle-to-foot connector: the shin ends AT the ankle axis and
-           the foot box top is 12 cm lower - without this the foot
-           looked detached, floating in air. Visual-only (no collision):
-           the sole must stay the only foot contact for the M8 sensors. -->
-      <visual>
-        <origin xyz="0 0 ${-0.06}"/>
-        <geometry><box size="0.03 0.04 0.12"/></geometry>
-        <material name="actuator_dark"/>
-      </visual>
+      <!-- The CAD ankle assembly is included in the foot visual. -->
       <collision>
         <origin xyz="0 0 0"/>
         <geometry><cylinder radius="0.04" length="0.05"/></geometry>
@@ -186,11 +154,7 @@
          "_collision" (name+"_collision") and the sensor reference
          silently matches nothing - found the hard way in M8 testing. -->
     <link name="${prefix}_foot">
-      <visual>
-        <origin xyz="0.02 0 ${-ankle_h + foot_h/2}"/>
-        <geometry><box size="${foot_len} ${foot_w} ${foot_h}"/></geometry>
-        <material name="black"/>
-      </visual>
+      <xacro:cad_visual link="${prefix}_foot"/>
       <collision>
         <origin xyz="0.02 0 ${-ankle_h + foot_h/2}"/>
         <geometry><box size="${foot_len} ${foot_w} ${foot_h}"/></geometry>

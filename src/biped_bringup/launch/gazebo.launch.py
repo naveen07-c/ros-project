@@ -1,4 +1,5 @@
 import os
+import shlex
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
@@ -36,17 +37,17 @@ def generate_launch_description():
             os.path.join(get_package_share_directory('ros_gz_sim'),
                          'launch', 'gz_sim.launch.py')),
         condition=UnlessCondition(use_gui),
-        launch_arguments={'gz_args': ['-r -s ', LaunchConfiguration('world')]}.items())
+        launch_arguments={'gz_args': ['-r -s "', LaunchConfiguration('world'), '"']}.items())
 
     gazebo_gui = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(get_package_share_directory('ros_gz_sim'),
                          'launch', 'gz_sim.launch.py')),
         condition=IfCondition(use_gui),
-        launch_arguments={'gz_args': ['-r ', LaunchConfiguration('world')]}.items())
+        launch_arguments={'gz_args': ['-r "', LaunchConfiguration('world'), '"']}.items())
 
     robot_description = ParameterValue(
-        Command(['xacro ', os.path.join(desc_share, 'urdf', 'biped.urdf.xacro'),
+        Command(['xacro ', shlex.quote(os.path.join(desc_share, 'urdf', 'biped.urdf.xacro')),
                  ' with_payload:=', with_payload]),
         value_type=str)
 

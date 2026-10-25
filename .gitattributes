@@ -1,0 +1,2 @@
+# Preserve the supplied CAD file byte-for-byte, including its CRLF line endings.
+Robot.STEP binary

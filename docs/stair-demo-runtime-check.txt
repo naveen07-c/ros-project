@@ -1,0 +1,6 @@
+Gazebo headless run: 3200 iterations, exit code 0
+[Msg] CAD WALK + STAIRS: kinematic demonstration, 51.9833 seconds. Pause/reset with Gazebo controls.
+[Msg] CAD stair demo complete: both feet on the upper landing.
+
+GUI: visually verified changing poses and final upper landing; pause/reset services returned true.
+Launch: ./run_sim.sh demo use_gui:=false started; stopped intentionally with SIGINT after 8 seconds; temporary directory cleaned.

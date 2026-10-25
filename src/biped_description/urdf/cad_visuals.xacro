@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Robot.STEP tessellation fitted to the original simulation rig.
+       Visual-only: never use these meshes for collision or inertia.
+       See meshes/cad/manifest.json and docs/CAD_VISUALS.md. -->
+  <!-- sdformat converts URDF colors with a 1.25 gain; compensate here
+       so Gazebo receives the original STEP RGB values from manifest.json. -->
+  <material name="cad_blue_grey">
+    <color rgba="${0.8 * 0.792156862745098} ${0.8 * 0.819607843137255} ${0.8 * 0.933333333333333} 1"/>
+  </material>
+  <xacro:macro name="cad_visual" params="link">
+    <visual name="${link}_cad_visual">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://biped_description/meshes/cad/${link}.stl"/>
+      </geometry>
+      <material name="cad_blue_grey"/>
+    </visual>
+  </xacro:macro>
+</robot>

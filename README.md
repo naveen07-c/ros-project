@@ -1,5 +1,7 @@
 # Bipedal Payload-Carrying Robot — ROS 2 Jazzy + Gazebo Harmonic
 
+**CAD walking + stairs:** run `./run_sim.sh` to watch the `Robot.STEP` robot walk, climb four stairs, and stop on the landing. This starts a **kinematic animation**, not a dynamically balanced controller. The CAD meshes are fitted to the existing simulation rig. [Run instructions and validation](docs/STAIR_DEMO.md) · [CAD fitting details](docs/CAD_VISUALS.md).
+
 Simulation and control stack for a **10-DoF bipedal robot** (2 legs × 5 DoF:
 hip pitch/roll, knee, ankle pitch/roll) that carries a **1 kg payload** on a
 platform above the pelvis. Built for ROS 2 **Jazzy** on Ubuntu 24.04 with
@@ -48,6 +50,17 @@ source install/setup.bash
 ```
 
 ## Run
+
+```bash
+./run_sim.sh                      # automatic CAD walking + stairs demo
+./run_sim.sh demo use_gui:=false  # headless animation
+./run_sim.sh stand                # original physics standing simulation
+./run_sim.sh walk                 # original experimental flat-ground controller
+```
+
+The demo finishes in 52 simulation seconds and holds its final pose. Use Gazebo pause/play or reset to replay. See [the demo guide](docs/STAIR_DEMO.md).
+
+Original ROS launch entry points:
 
 ```bash
 # M2 — model in RViz (URDF check, no physics)

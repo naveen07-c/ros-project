@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!--
+  Four 40 mm risers, 360 mm treads and a top landing. Ground and sun are
+  inline (no Fuel/model:// includes) so the world loads offline.
+-->
+<sdf version="1.10">
+  <world name="stairs">
+    <physics name="default_physics" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+      <!-- AT-11 run BP: the explicit <dart> block (PGS/bullet variants,
+           runs Q-BN) coincides EXACTLY with the era where the APPROACH
+           crouch could no longer complete (0 steps built since BB).
+           Removed to restore run-I default physics; per-element
+           re-addition will identify the poison if needed. -->
+    </physics>
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <!-- M8 (PROJECT_REQUIREMENTS §6): sensor systems so the URDF-declared
+         IMU and foot-contact sensors are simulated and published on their
+         gz transport topics (bridged to ROS in gazebo.launch.py). The
+         rendering-backed Sensors system is not needed (no camera/lidar). -->
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-contact-system" name="gz::sim::systems::Contact"/>
+
+    <scene><ambient>0.55 0.55 0.6 1</ambient><background>0.16 0.19 0.25 1</background><shadows>true</shadows></scene>
+    <gui fullscreen="false">
+      <plugin filename="MinimalScene" name="3D View">
+        <gz-gui><title>3D View</title><property type="bool" key="showTitleBar">false</property><property type="string" key="state">docked</property></gz-gui>
+        <engine>ogre</engine><scene>scene</scene><ambient_light>0.6 0.6 0.6</ambient_light>
+        <background_color>0.16 0.19 0.25</background_color><camera_pose>3.0 -3.0 1.9 0 0.422 2.086</camera_pose>
+      </plugin>
+      <plugin filename="GzSceneManager" name="Scene Manager"><gz-gui><property key="resizable" type="bool">false</property><property key="width" type="double">5</property><property key="height" type="double">5</property><property key="state" type="string">floating</property><property key="showTitleBar" type="bool">false</property></gz-gui></plugin>
+      <plugin filename="InteractiveViewControl" name="Interactive view control"><gz-gui><property key="resizable" type="bool">false</property><property key="width" type="double">5</property><property key="height" type="double">5</property><property key="state" type="string">floating</property><property key="showTitleBar" type="bool">false</property></gz-gui></plugin>
+      <plugin filename="WorldControl" name="World control"><gz-gui><title>Pause / restart demo</title><property type="bool" key="showTitleBar">false</property><property type="string" key="state">floating</property><property type="double" key="width">240</property><property type="double" key="height">72</property><property type="double" key="x">0</property><property type="double" key="y">0</property></gz-gui><play_pause>true</play_pause><step>true</step><start_paused>false</start_paused></plugin>
+      <plugin filename="WorldStats" name="World stats"><gz-gui><property key="state" type="string">floating</property><property key="showTitleBar" type="bool">false</property><property key="width" type="double">290</property><property key="height" type="double">110</property><anchors target="3D View"><line own="right" target="right"/><line own="bottom" target="bottom"/></anchors></gz-gui><sim_time>true</sim_time><real_time_factor>true</real_time_factor></plugin>
+    </gui>
+    <gravity>0 0 -9.8066</gravity>
+
+    <light type="directional" name="sun">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane><normal>0 0 1</normal><size>100 100</size></plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode><mu>1.0</mu><mu2>1.0</mu2></ode>
+            </friction>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane><normal>0 0 1</normal><size>100 100</size></plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="stair_1"><static>true</static><pose>0.8400000000000001 0 0.02 0 0 0</pose><link name="step">
+      <collision name="tread"><geometry><box><size>0.36 1.0 0.04</size></box></geometry><surface><friction><ode><mu>1</mu><mu2>1</mu2></ode></friction></surface></collision>
+      <visual name="concrete"><geometry><box><size>0.36 1.0 0.04</size></box></geometry><material><ambient>0.27 0.34 0.43 1</ambient><diffuse>0.36 0.44 0.55 1</diffuse></material></visual>
+      <visual name="edge"><pose>-0.16799999999999998 0 0.0205 0 0 0</pose><geometry><box><size>0.024 1.0 0.001</size></box></geometry><material><ambient>0.95 0.62 0.10 1</ambient><diffuse>0.95 0.62 0.10 1</diffuse></material></visual>
+    </link></model>
+    <model name="stair_2"><static>true</static><pose>1.2 0 0.04 0 0 0</pose><link name="step">
+      <collision name="tread"><geometry><box><size>0.36 1.0 0.08</size></box></geometry><surface><friction><ode><mu>1</mu><mu2>1</mu2></ode></friction></surface></collision>
+      <visual name="concrete"><geometry><box><size>0.36 1.0 0.08</size></box></geometry><material><ambient>0.27 0.34 0.43 1</ambient><diffuse>0.36 0.44 0.55 1</diffuse></material></visual>
+      <visual name="edge"><pose>-0.16799999999999998 0 0.0405 0 0 0</pose><geometry><box><size>0.024 1.0 0.001</size></box></geometry><material><ambient>0.95 0.62 0.10 1</ambient><diffuse>0.95 0.62 0.10 1</diffuse></material></visual>
+    </link></model>
+    <model name="stair_3"><static>true</static><pose>1.5599999999999998 0 0.06 0 0 0</pose><link name="step">
+      <collision name="tread"><geometry><box><size>0.36 1.0 0.12</size></box></geometry><surface><friction><ode><mu>1</mu><mu2>1</mu2></ode></friction></surface></collision>
+      <visual name="concrete"><geometry><box><size>0.36 1.0 0.12</size></box></geometry><material><ambient>0.27 0.34 0.43 1</ambient><diffuse>0.36 0.44 0.55 1</diffuse></material></visual>
+      <visual name="edge"><pose>-0.16799999999999998 0 0.0605 0 0 0</pose><geometry><box><size>0.024 1.0 0.001</size></box></geometry><material><ambient>0.95 0.62 0.10 1</ambient><diffuse>0.95 0.62 0.10 1</diffuse></material></visual>
+    </link></model>
+    <model name="stair_4"><static>true</static><pose>2.2800000000000002 0 0.08 0 0 0</pose><link name="step">
+      <collision name="tread"><geometry><box><size>1.08 1.0 0.16</size></box></geometry><surface><friction><ode><mu>1</mu><mu2>1</mu2></ode></friction></surface></collision>
+      <visual name="concrete"><geometry><box><size>1.08 1.0 0.16</size></box></geometry><material><ambient>0.27 0.34 0.43 1</ambient><diffuse>0.36 0.44 0.55 1</diffuse></material></visual>
+      <visual name="edge"><pose>-0.528 0 0.0805 0 0 0</pose><geometry><box><size>0.024 1.0 0.001</size></box></geometry><material><ambient>0.95 0.62 0.10 1</ambient><diffuse>0.95 0.62 0.10 1</diffuse></material></visual>
+    </link></model>
+  </world>
+</sdf>

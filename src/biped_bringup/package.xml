@@ -9,6 +9,10 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>gz-sim8</depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+
   <exec_depend>biped_description</exec_depend>
   <exec_depend>ros_gz_sim</exec_depend>
   <exec_depend>ros_gz_bridge</exec_depend>

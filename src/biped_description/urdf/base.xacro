@@ -36,13 +36,7 @@
 
   <xacro:macro name="base" params="with_payload:=true">
     <link name="base_link">
-      <visual>
-        <origin xyz="0 0 0"/>
-        <geometry>
-          <box size="${pelvis_w} ${pelvis_d} ${pelvis_h}"/>
-        </geometry>
-        <material name="dark_grey"/>
-      </visual>
+      <xacro:cad_visual link="base_link"/>
       <collision>
         <origin xyz="0 0 0"/>
         <geometry>
@@ -59,38 +53,7 @@
     </joint>
 
     <link name="platform_link">
-      <!-- Torso visual: white chest shell + teal chest panel + dark
-           shoulder bar, instead of the bare shelf slab. Visual-only;
-           the physics collision stays the original shelf so masses
-           and inertia are untouched. -->
-      <visual>
-        <origin xyz="0 0 ${0.055}"/>
-        <geometry>
-          <box size="0.17 0.17 0.14"/>
-        </geometry>
-        <material name="silver"/>
-      </visual>
-      <visual>
-        <origin xyz="0.088 0 0.06"/>
-        <geometry>
-          <box size="0.005 0.11 0.08"/>
-        </geometry>
-        <material name="accent_teal"/>
-      </visual>
-      <visual>
-        <origin xyz="0 0 ${0.135}"/>
-        <geometry>
-          <box size="0.24 0.09 0.045"/>
-        </geometry>
-        <material name="actuator_dark"/>
-      </visual>
-      <visual>
-        <origin xyz="0 0 0"/>
-        <geometry>
-          <box size="${plat_w} ${plat_d} ${plat_t}"/>
-        </geometry>
-        <material name="silver"/>
-      </visual>
+      <xacro:cad_visual link="platform_link"/>
       <collision>
         <origin xyz="0 0 0"/>
         <geometry>
@@ -108,22 +71,7 @@
       </joint>
 
       <link name="payload_link">
-        <!-- Head module: white head shell + glowing cyan visor strip
-             on the front face. Visual-only; collision/inertia unchanged. -->
-        <visual>
-          <origin xyz="0 0 0"/>
-          <geometry>
-            <box size="0.10 0.10 0.08"/>
-          </geometry>
-          <material name="silver"/>
-        </visual>
-        <visual>
-          <origin xyz="0.0505 0 0.01"/>
-          <geometry>
-            <box size="0.002 0.085 0.028"/>
-          </geometry>
-          <material name="eye_cyan"/>
-        </visual>
+        <!-- No payload object appears in Robot.STEP. Its physics is retained. -->
         <collision>
           <origin xyz="0 0 0"/>
           <geometry>
