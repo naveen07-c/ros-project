@@ -18,6 +18,8 @@
   <material name="dark_gray"><color rgba="0.25 0.25 0.25 1"/></material>
   <material name="accent"><color rgba="0.85 0.35 0.15 1"/></material>
   <material name="payload_blue"><color rgba="0.15 0.45 0.85 1"/></material>
+  <!-- Compensate for sdformat URDF-to-SDF color gain; matches STEP RGB. -->
+  <material name="cad_blue_grey"><color rgba="0.633725 0.655686 0.746667 1"/></material>
 
   <!-- ============================ PELVIS ============================ -->
   <link name="base_link">
@@ -33,13 +35,13 @@
     <visual name="base_visual">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry><mesh filename="package://biped_gazebo_sim/meshes/cad/base_link.stl" scale="1.45 1.25 1"/></geometry>
-      <material name="light_gray"/>
+      <material name="cad_blue_grey"/>
     </visual>
 
     <visual name="platform_cad_visual">
       <origin xyz="0 0 0.055" rpy="0 0 0"/>
       <geometry><mesh filename="package://biped_gazebo_sim/meshes/cad/platform_link.stl" scale="1 1 1"/></geometry>
-      <material name="light_gray"/>
+      <material name="cad_blue_grey"/>
     </visual>
   </link>
 
@@ -106,7 +108,7 @@
     <visual name="left_thigh_visual">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry><mesh filename="package://biped_gazebo_sim/meshes/cad/left_thigh.stl" scale="0.53 0.50 1"/></geometry>
-      <material name="light_gray"/>
+      <material name="cad_blue_grey"/>
     </visual>
   </link>
 
@@ -132,7 +134,7 @@
     <visual name="left_shin_visual">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry><mesh filename="package://biped_gazebo_sim/meshes/cad/left_shin.stl" scale="0.74 0.45 1"/></geometry>
-      <material name="light_gray"/>
+      <material name="cad_blue_grey"/>
     </visual>
   </link>
 
@@ -237,7 +239,7 @@
     <visual name="right_thigh_visual">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry><mesh filename="package://biped_gazebo_sim/meshes/cad/right_thigh.stl" scale="0.53 0.50 1"/></geometry>
-      <material name="light_gray"/>
+      <material name="cad_blue_grey"/>
     </visual>
   </link>
 
@@ -263,7 +265,7 @@
     <visual name="right_shin_visual">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry><mesh filename="package://biped_gazebo_sim/meshes/cad/right_shin.stl" scale="0.74 0.45 1"/></geometry>
-      <material name="light_gray"/>
+      <material name="cad_blue_grey"/>
     </visual>
   </link>
 

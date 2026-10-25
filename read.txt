@@ -1,0 +1,114 @@
+BIPED GAIT + Robot.STEP SIMULATION — REVIEW NOTES
+=================================================
+
+PURPOSE
+-------
+This repository contains a ROS 2 Jazzy / Gazebo Harmonic biped, an automatic
+stair-climbing demo, and detailed visual meshes from the supplied Robot.STEP
+assembly. There are two simulation launch paths: run.sh starts the physics-
+based stair climber, and run_sim.sh demo starts a separate CAD motion preview.
+They have different purposes and should not be confused during review.
+
+MAIN REVIEW DEMO: PHYSICS-BASED STAIRS
+--------------------------------------
+From the repository root, run:
+
+    ./run.sh
+
+The first run builds the biped_gazebo_sim ROS package if it has not been built,
+opens Gazebo, starts the robot controllers and walking node, then sets the
+demo stop parameters. The default world has five stair risers of 0.03 m,
+0.20 m treads and a 0.15 m upper landing. The robot walks in, steps up one
+tread at a time, continues onto the landing, then stops and holds the pose.
+
+Runtime log: /tmp/biped_demo.log. Look for the CLIMBED and DEMO STOP messages.
+Use Gazebo pause and play controls to control the simulation. Ctrl+C in the
+terminal running run.sh stops the launch.
+
+The launcher attempts to remove old Gazebo and ROS simulation processes
+before it starts. Close any unrelated simulations that you need to keep
+running before starting this demo.
+
+For a manual build and launch:
+
+    source /opt/ros/jazzy/setup.bash
+    colcon build --packages-select biped_gazebo_sim
+    source install/setup.bash
+    ros2 launch biped_gazebo_sim simulation.launch.py headless:=false walk:=true world:=$PWD/ros2_gazebo_sim/worlds/stairs.sdf
+
+The launcher supplies the full demo settings. Its terrain_x and terrain_z
+arguments are matching comma-separated arrays. Repeated x coordinates encode
+the vertical stair faces. run.sh sets speed to 0.10 m/s and step_time to 2.0 s,
+so the nominal forward distance per step is 0.20 m, one tread. It sets the
+swing-foot lift to 0.04 m and supplies five 0.03 m risers. At the top, it arms
+a stop after the robot reaches a 0.14 m height threshold and waits 3 more
+seconds so it can plant and settle on the 0.15 m landing.
+
+HOW THE PHYSICS WALKER WORKS
+----------------------------
+ros2_gazebo_sim/urdf/biped.urdf describes the 10-DoF robot: five joints per
+leg, a 1 kg payload, joint limits, mass and inertia, collision geometry, and
+the Gazebo ros2_control interface. simulation.launch.py starts Gazebo,
+spawns the robot, starts the joint controllers and gait node, and uses
+simulation time. gait_controller.py plans alternating foot placements from a
+terrain height map and generates a walking trajectory with ZMP preview
+control. Gazebo physics and foot contacts advance the articulated robot. The
+stairs in the world file have collision geometry, so the robot interacts with
+the step edges in the simulation.
+
+The terrain map and gait settings describe this specific robot model and demo.
+Simulation results do not establish that a physical robot or different model
+can climb these steps.
+
+HOW THE STEP VISUALS FIT
+------------------------
+Robot.STEP is the supplied assembly source at the repository root. The
+115 STEP part instances were grouped into ten detailed STL meshes under
+ros2_gazebo_sim/meshes/cad. The URDF references the CAD meshes for the base,
+platform, hips, thighs, shins and feet. Visual scales fit the current robot
+and keep its feet in proportion to the 0.20 m stair treads. The original
+simplified collision shapes, inertias, joint definitions and stair controller
+remain in place. The source assembly contains no payload object: the 1 kg
+payload still affects the robot's simulated mass and collisions, but is not
+shown as a blue block. The exported meshes are fitted to the simulation rig,
+not an exact dimensional reconstruction of the STEP assembly. See
+
+docs/CAD_VISUALS.md
+
+for the CAD source hash, exported parts, and fit details.
+
+OPTIONAL CAD MOTION PREVIEW
+---------------------------
+To inspect the earlier four-stair animation using the same STEP appearance:
+
+    ./run_sim.sh demo
+
+To run that preview without the Gazebo GUI:
+
+    ./run_sim.sh demo use_gui:=false
+
+This mode loads a recorded inverse-kinematics pose sequence and applies link
+poses. It is a visual animation, not the physics stair-climbing controller.
+It does not simulate contact forces or validate dynamic balance. Use it to
+inspect the mesh appearance and planned foot clearance. The guide and
+geometric check are in docs/STAIR_DEMO.md and tools/check_stair_demo.py.
+
+run_sim.sh also accepts stand and walk to start the earlier ROS simulation in
+src/. Those modes use a separate robot model and are independent of the newer
+stair controller in ros2_gazebo_sim/.
+
+FILE MAP FOR REVIEW
+-------------------
+README.md                                stair-demo overview and quick start
+run.sh                                   main physics-based stair demo
+ros2_gazebo_sim/launch/simulation.launch.py  Gazebo and controller launch
+ros2_gazebo_sim/scripts/gait_controller.py  gait planning and foot placement
+ros2_gazebo_sim/config/gait.yaml        default gait and balance parameters
+ros2_gazebo_sim/worlds/stairs.sdf       five steps, ground and scene lighting
+ros2_gazebo_sim/urdf/biped.urdf         robot joints, physics and STEP visuals
+ros2_gazebo_sim/meshes/cad/             detailed STEP-derived visual meshes
+Robot.STEP                              source CAD assembly
+run_sim.sh demo                         optional kinematic CAD preview
+src/                                    earlier ROS simulation packages
+docs/CAD_VISUALS.md                     mesh export and fit details
+docs/STAIR_DEMO.md                      visual preview instructions

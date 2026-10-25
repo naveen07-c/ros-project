@@ -24,6 +24,8 @@ The articulated robot visuals use the supplied `Robot.STEP` assembly exported in
 
 For the separate automatic CAD animation preview, run `./run_sim.sh demo`. It uses the earlier ROS packages and a kinematic Gazebo demonstration; the physics based stair climb above remains `./run.sh`. Run instructions and model limits are in [STAIR_DEMO.md](docs/STAIR_DEMO.md).
 
+Review guide: read.txt explains the physics-based stair demo, STEP visuals, file map, and optional animation preview.
+
 ## Requirements
 
 Ubuntu 24.04 with ROS 2 Jazzy and Gazebo Harmonic:
