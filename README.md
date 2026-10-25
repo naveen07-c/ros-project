@@ -1,116 +1,113 @@
-# Bipedal Payload-Carrying Robot — ROS 2 Jazzy + Gazebo Harmonic
+# Biped Gazebo ROS 2 Sim
 
-**CAD walking + stairs:** run `./run_sim.sh` to watch the `Robot.STEP` robot walk, climb four stairs, and stop on the landing. This starts a **kinematic animation**, not a dynamically balanced controller. The CAD meshes are fitted to the existing simulation rig. [Run instructions and validation](docs/STAIR_DEMO.md) · [CAD fitting details](docs/CAD_VISUALS.md).
+ROS 2 Jazzy + Gazebo Harmonic simulation of a 10-DoF biped (5 joints per leg)
+driven by a ZMP preview-control walking gait.
 
-Simulation and control stack for a **10-DoF bipedal robot** (2 legs × 5 DoF:
-hip pitch/roll, knee, ankle pitch/roll) that carries a **1 kg payload** on a
-platform above the pelvis. Built for ROS 2 **Jazzy** on Ubuntu 24.04 with
-**Gazebo Harmonic**.
+## Demo: stair climb and stop
 
-> Requirements, assumptions, and every acceptance-test verdict are tracked in
-> [`PROJECT_REQUIREMENTS.md`](PROJECT_REQUIREMENTS.md) — the single source of
-> truth. All invented dimensions/masses are explicitly tagged **ASSUMPTION**.
+```bash
+./run.sh
+```
+
+The script builds the package on first run, launches the stairs world in the
+Gazebo GUI, and arms a demo stop. The robot:
+
+1. stands for 2 s, then walks to the staircase,
+2. climbs the 5 steps (0.03 m risers, 0.20 m treads), one foot per tread,
+3. walks 3 s onto the top platform,
+4. halts at the end of that step with both feet planted and stays there.
+
+It therefore never walks off the far edge of the platform. Runtime log:
+`/tmp/biped_demo.log` (look for `CLIMBED` and `DEMO STOP`).
+
+The articulated robot visuals use the supplied `Robot.STEP` assembly exported into high detail meshes. The meshes replace visual geometry in the simulated biped while preserving its links, contact geometry, inertias and stair controller. Meshes are scaled to the current controller model so the 0.20 m stair treads remain clear. The 1 kg payload still contributes its original mass and collision, but it has no STEP part. See [CAD visuals](docs/CAD_VISUALS.md).
+
+For the separate automatic CAD animation preview, run `./run_sim.sh demo`. It uses the earlier ROS packages and a kinematic Gazebo demonstration; the physics based stair climb above remains `./run.sh`. Run instructions and model limits are in [STAIR_DEMO.md](docs/STAIR_DEMO.md).
+
+## Requirements
+
+Ubuntu 24.04 with ROS 2 Jazzy and Gazebo Harmonic:
+
+```bash
+sudo apt update
+sudo apt install ros-jazzy-desktop ros-dev-tools \
+  ros-jazzy-ros-gz ros-jazzy-gz-ros2-control \
+  ros-jazzy-ros2-controllers ros-jazzy-xacro
+```
+
+## Manual run
+
+```bash
+source /opt/ros/jazzy/setup.bash
+colcon build --packages-select biped_gazebo_sim
+source install/setup.bash
+
+ros2 launch biped_gazebo_sim simulation.launch.py \
+  headless:=false walk:=true \
+  world:=$PWD/ros2_gazebo_sim/worlds/stairs.sdf \
+  ankle_slope_sign:=-1.0 \
+  edge_stop:=true edge_lookahead:=0.3 edge_drop:=0.15 \
+  foot_lift:=0.04 kp_pitch:=0.0 kd_pitch:=0.0 \
+  slope_speed_factor:=0.5 slope_speed_thresh:=0.03 slope_zmp_gain:=0.0 \
+  speed:=0.1 step_time:=2.0 \
+  "terrain_x:=0,1.5,1.5,1.7,1.7,1.9,1.9,2.1,2.1,2.3,2.3,8.0" \
+  "terrain_z:=0,0,0.03,0.03,0.06,0.06,0.09,0.09,0.12,0.12,0.15,0.15" \
+  walk_enable:=true
+```
+
+In a second terminal, arm the stop (3 s after the top platform is reached):
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+ros2 param set /gait_controller stop_after_climb 3.0
+```
+
+## Why `step_time:=2.0`
+
+The foothold spacing is `speed * step_time`. With `speed=0.1` and
+`step_time=2.0` the spacing is exactly 0.20 m, i.e. one tread per step, so the
+feet alternate onto adjacent steps. A smaller stride makes two consecutive
+steps land on the same tread (both feet on one step), which is less stable on
+stairs. Slowing the cadence (large `step_time`) while keeping that 0.20 m
+stride is what makes the climb reliable.
 
 ## Repository layout
 
 ```
-PROJECT_REQUIREMENTS.md   requirements, ASSUMPTION tables, AT-01..AT-11 results log
-HARDWARE_SELECTION.md     servo/actuator sizing from sim-measured torques; Tier S BOM
-BRINGUP_PLAN.md           M13 physical bring-up plan (suspended-first, gated stages)
-VALIDATION_PLAN.md        M14 hardware acceptance suite (1:1 mapping to sim ATs)
-src/
-├── biped_description/    URDF/Xacro model, RSP display launch, RViz config
-├── biped_control/        ros2_control config, stand_hold, gait generator, odometry,
-│                         sensor bridges, PWM-servo hardware plugin, ESP32 firmware
-└── biped_bringup/        flat world SDF, full-stack Gazebo launch files
+.
+├── README.md
+├── run.sh                          # demo launcher (build + launch + stop)
+└── ros2_gazebo_sim/                # package: biped_gazebo_sim
+    ├── CMakeLists.txt
+    ├── package.xml
+    ├── config/
+    │   ├── controllers.yaml        # ros2_control / joint trajectory controller
+    │   └── gait.yaml               # gait controller parameters
+    ├── launch/
+    │   └── simulation.launch.py    # Gazebo, robot, controllers, gait node
+    ├── meshes/                     # robot meshes and Robot.STEP CAD visuals
+    ├── scripts/
+    │   └── gait_controller.py      # ZMP preview gait controller
+    ├── urdf/
+    │   └── biped.urdf              # robot model + ros2_control + odometry
+    └── worlds/
+        └── stairs.sdf              # 5-step staircase demo world
 ```
 
-## Prerequisites
+`build/`, `install/` and `log/` are generated by `colcon build` and are not
+part of the source; they can be deleted at any time.
 
-- Ubuntu 24.04, ROS 2 Jazzy (`/opt/ros/jazzy/setup.bash`)
-- Gazebo Harmonic + `ros_gz` integration packages
-- ros2_control stack:
+## Controller notes
 
-```bash
-sudo apt install ros-jazzy-gz-ros2-control \
-     ros-jazzy-joint-trajectory-controller ros-jazzy-ros2controlcli
-```
-
-## Build
-
-Packages live in this repo; the colcon workspace symlinks to it:
-
-```bash
-mkdir -p ~/RosProject_ws/src
-ln -sfn /path/to/this/repo/src ~/RosProject_ws/src   # if not already linked
-source /opt/ros/jazzy/setup.bash
-cd ~/RosProject_ws
-colcon build --symlink-install
-source install/setup.bash
-```
-
-## Run
-
-```bash
-./run_sim.sh                      # automatic CAD walking + stairs demo
-./run_sim.sh demo use_gui:=false  # headless animation
-./run_sim.sh stand                # original physics standing simulation
-./run_sim.sh walk                 # original experimental flat-ground controller
-```
-
-The demo finishes in 52 simulation seconds and holds its final pose. Use Gazebo pause/play or reset to replay. See [the demo guide](docs/STAIR_DEMO.md).
-
-Original ROS launch entry points:
-
-```bash
-# M2 — model in RViz (URDF check, no physics)
-ros2 launch biped_description display.launch.py
-
-# M3/M4 — Gazebo only, headless spawn + standing free-fall settle
-ros2 launch biped_bringup gazebo.launch.py          # use_gui:=true for GUI
-
-# M5 — full standing stack: gazebo + controllers + stand_hold (15° crouch)
-ros2 launch biped_control stand.launch.py           # with_payload:=true default
-
-# M6+ — open-loop gait walking session
-ros2 launch biped_control walk.launch.py            # see PROJECT_REQUIREMENTS §10.1
-```
-
-Quick health check once a stack is up:
-
-```bash
-ros2 control list_controllers      # joint_trajectory_controller should be active
-ros2 topic hz /joint_states        # 500 Hz expected under the stand stack
-```
-
-## Verification status (2026-09-26 re-run)
-
-| Acceptance test | Result |
-|---|---|
-| AT-01 requirements traceable | **PASS** |
-| AT-02 URDF/Xacro valid (both payload variants, URDF→SDF friction merge) | **PASS** |
-| AT-03 Gazebo spawn stands stable (z = 0.599999 m, 0 drift over 6 s) | **PASS** |
-| AT-04 JTC + joint_states at 500 Hz | **PASS** |
-| AT-05 crouch hold ≥ 30 s with/without 1 kg payload | **PASS** |
-| AT-07 TF tree complete | **PASS** |
-| AT-08 IMU + foot contacts | **PASS** |
-| AT-09 RViz2 visualization | **PASS** |
-| AT-10 gait stop halts safely | **PASS** |
-| AT-06/AT-11 unattended 1 m walk | **Closed with characterized gap** — 3 clean steps/session reproducible; going further needs CoM/ZMP preview control (out of the open-loop scope chosen in §7) |
-
-Full dated log with raw numbers: [`PROJECT_REQUIREMENTS.md` §10.1](PROJECT_REQUIREMENTS.md).
-
-## Hardware phase (M12–M14)
-
-`HARDWARE_SELECTION.md` derives servo torque requirements from the
-sim-measured masses/torques and selects **Tier S — ₹15,000 student build**
-(10 × DS3218 + ESP32 + PCA9685 + MPU6050 + FSRs). The hardware layer is
-already implemented in `biped_control` (`pwm_servo_hw` ros2_control plugin,
-`esp32_sensor_bridge`, ESP32 firmware, `ros2_control_hw.xacro`) so the sim
-nodes run byte-identical on hardware. Execution of M13/M14 awaits the kit.
-
-## Safety
-
-No real motor commands during simulation development. Physical bring-up
-(BRINGUP_PLAN.md) is bench-tested **suspended** until every gate passes; the
-E-stop semantics (zero-trajectory + freeze) are identical in sim and hardware.
+- Foot placement is planned on a terrain height map (`terrain_x` / `terrain_z`);
+  risers are encoded as duplicated x values.
+- `edge_stop` probes ahead and halts before a large drop
+  (`edge_lookahead`, `edge_drop`).
+- `stop_after_climb` (`climb_z`, `stop_after_climb`) halts the demo on the top
+  platform.
+- Heading is open-loop in this build: the robot walks straight but does not
+  actively correct yaw.
+- Reliable stair height is about 0.08-0.09 m per riser; the demo uses 0.03 m.
+  Taller steps exist in earlier test worlds but were not reliable.
+- The gait controller does not detect falls; use the odometry log for checks.

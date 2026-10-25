@@ -21,7 +21,7 @@ All 115 STEP part instances remain in the existing ten articulated meshes. Each 
 ./run_sim.sh gazebo world:="$PWD/src/biped_bringup/worlds/stairs_world.sdf"
 ```
 
-The last command loads the stairs with physics and the original robot. It does **not** activate a stair-climbing controller. The original flat-ground controller retains its documented balance/distance limitations. Existing controller sources, collision shapes, inertias and joints are unchanged. The static stairs include collision boxes and friction for future controller work.
+The last command loads the stairs with physics and the original robot. It does **not** activate a stair-climbing controller. The optional animation preview does not use dynamic force balance. Existing controller sources, collision shapes, inertias and joints are unchanged. The static stairs include collision boxes and friction for future controller work.
 
 ## Build and verify
 

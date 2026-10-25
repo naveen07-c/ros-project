@@ -2,7 +2,7 @@
 
 > This document records the original visual-only work. The default runner now starts the [walking and stair demonstration](STAIR_DEMO.md); use `./run_sim.sh stand` for the standing behavior described below.
 
-This checkout is in `Documents/ROS sim/ros-project`, with a byte-identical copy of the supplied `Robot.STEP` included at the repository root. It was cloned from the existing checkout of `https://github.com/naveen07-c/ros-project.git` at commit `8d6433f` (2026-09-26). GitHub fetch required authentication, so this is **not verified against the latest remote revision**. The original checkout in `Documents/ROS/ros-project` was left untouched.
+This checkout uses a byte-identical copy of the supplied `Robot.STEP`, included at the repository root. The STEP appearance is fitted to the stair-climbing robot in `ros2_gazebo_sim/urdf/biped.urdf`; the original biped simulation remains available in `src/`. It was cloned from the existing checkout of `https://github.com/naveen07-c/ros-project.git` at commit `8d6433f` (2026-09-26). GitHub fetch required authentication, so this is **not verified against the latest remote revision**. The original checkout in `Documents/ROS/ros-project` was left untouched.
 
 ## Run
 
@@ -37,7 +37,7 @@ source install/setup.bash
 python3 tools/check_visual_only.py
 ```
 
-The check compares this model against Git commit `8d6433f` after removing only visual/material elements, for both payload modes, in expanded URDF and Gazebo SDF. All joints, limits, axes, masses, inertias, collision shapes, contact settings, sensors, and control plugins must match. Controller sources, gait/controller YAML, and the original flat world must also be unchanged. The separate stair world is an addition.
+The check compares this model against Git commit `8d6433f` after removing only visual/material elements, for both payload modes, in expanded URDF and Gazebo SDF. All joints, limits, axes, masses, inertias, collision shapes, contact settings, sensors, and control plugins must match. The verification compares against original commit `8d6433f` and confirms that both legacy and stair climbing physics remain separate from the kinematic CAD animation. The stair environment is an addition.
 
 The three ROS packages built successfully. Original and CAD versions both completed the standing goal, with both controllers active. Measured settled pelvis heights were 0.5855283745 m (original) and 0.5855283670 m (CAD). The existing walking algorithm has not been retuned or newly validated for a longer walking distance. Existing hardware-code compiler warnings and SDF contact warnings were left unchanged.
 
